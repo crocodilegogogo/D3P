@@ -1,6 +1,6 @@
-# $\mathrm{D}^3\mathrm{P}$
+# $Distribution-aware Dynamic Data Pruning for Deep Learning$
 
-PyTorch implementation of our paper ***Distribution-aware Dynamic Data Pruning for Deep Learning***.
+PyTorch implementation of our paper ‘Distribution-aware Dynamic Data Pruning for Deep Learning’.
 
 ---
 
