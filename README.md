@@ -1,4 +1,4 @@
-# $Distribution-aware Dynamic Data Pruning for Deep Learning$
+# Distribution-aware Dynamic Data Pruning for Deep Learning
 
 PyTorch implementation of our paper ‘Distribution-aware Dynamic Data Pruning for Deep Learning’.
 
