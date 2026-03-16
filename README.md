@@ -1,6 +1,6 @@
 # Distribution-aware Dynamic Data Pruning for Deep Learning
 
-This is the PyTorch implementation of our paper ‘Distribution-aware Dynamic Data Pruning for Deep Learning’. In this repository, we insert $\mathrm{D}^3\mathrm{P}$ into the pre-training stage of Masked Autoencoders (MAE).
+This is the PyTorch implementation of our paper ‘Distribution-aware Dynamic Data Pruning for Deep Learning’. In this repository, we insert $\mathrm{D}^3\mathrm{P}$ into the pre-training pipeline of Masked Autoencoders (MAE).
 
 ---
 
@@ -37,7 +37,9 @@ pip install scipy tensorboard tqdm numpy==1.23.5
 
 ### 1. Prepare training data
 
-1.1 Download the [ImageNet-1K](https://www.image-net.org/) dataset, ensuring that the extracted directory contains the standard `train/` and `val/` subdirectories.
+1.1 Download the [ImageNet-1K](https://www.image-net.org/) dataset, ensuring that the extracted directory contains the standard `train/` and `val/` subdirectories. Then the structure is as follows:
+
+
 
 1.2 In `train_d3p.sh`, replace `/path/to/data` with the absolute path to your local ImageNet-1K dataset.
 
