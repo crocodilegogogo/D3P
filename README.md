@@ -72,7 +72,7 @@ Run MAE pre-training with $\mathrm{D}^3\mathrm{P}$, followed by the downstream f
 
 ## Comparative Results
 
-![](E:\Github_upload_code\D3P\Figs\Table1.jpg)
+![](Figs/Table1.jpg)
 
 ------
 
