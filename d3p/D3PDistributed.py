@@ -16,6 +16,7 @@ from .D3PSampler import (
 class D3PDistributed:
     def __init__(self, dataset, batchsize, args, padding_data=False, shuffle=True,
                  writer=None, logging_on=True, num_workers=4, num_replicas=None, rank=None, collate_fn=None):
+        # Initializes the distributed D3P pruning class with multi-GPU synchronization support.
         # logging
         self.logging_on = logging_on
         if logging_on:
@@ -104,6 +105,7 @@ class D3PDistributed:
         self.update = self.update_loss_all()
 
     def sync_candidate(self):
+        # Synchronizes the list of pruned data candidates across all distributed processes.
         candidate_tensor = torch.tensor(self.candidate, dtype=torch.long).to(self.device)
         candidate_length = torch.tensor([len(self.candidate)], dtype=torch.long).to(self.device)
         dist.broadcast(candidate_length, src=0)
@@ -117,23 +119,28 @@ class D3PDistributed:
             self.candidate = candidate_tensor.cpu().tolist()
 
     def sync_grad_scale(self):
+        # Synchronizes the gradient scaling tensor across all distributed processes.
         dist.broadcast(self.grad_scale_tensor, src=0)
 
     def gather_loss2_array(self):
+        # Aggregates the squared loss arrays from all distributed processes.
         dist.all_reduce(self.loss_tensor, op=dist.ReduceOp.SUM)
         dist.all_reduce(self.loss2_counter, op=dist.ReduceOp.SUM)
 
     def get_indexed_dataset(self):
+        # Returns the wrapped dataset that outputs both data and its original index.
         return self.indexed_dataset
 
     def get_dataloader(self):
+        # Returns the dataloaders for both the remaining data and the pruned data.
         return self.remain_dataloader, self.prune_dataloader
 
     def data_already_prune(self):
-        # Calculate the amount of data that has been discarded
+        # Returns the total number of data samples that have been pruned.
         return self.data_prune
 
     def update_loss_all(self):
+        # Determines whether the losses should be tracked and updated in the current distributed epoch.
         start_cal = self.s - self.n + 1
         if self.epoch < start_cal:
             return False
@@ -147,10 +154,11 @@ class D3PDistributed:
         return False
 
     def is_update(self):
+        # Returns a boolean flag indicating if loss tracking is currently active.
         return self.update
 
     def update_step(self, loss_step, idx):
-        # Update per step with gradient scaling
+        # Updates the loss tensor with gradient scaling for a batch during the distributed training step.
         self.data_using += len(idx)
         idx = idx.to(self.device)
         if self.update:
@@ -162,13 +170,13 @@ class D3PDistributed:
         return loss_weighted_mean
 
     def update_forward(self, loss_step, idx):
-        # Update while: calculate data using and store the loss
+        # Updates the loss tensor during the forward pass on pruned data in the distributed setup.
         idx = idx.to(self.device)
         self.loss_tensor[idx] += loss_step.clone().detach()
         self.loss2_counter[idx] += 1
 
     def update_epoch(self):
-        # Update per epoch: calculate the data should be discarded and feed-back log
+        # Aggregates losses across GPUs, performs distribution-aware pruning, and synchronizes samplers at the epoch's end.
         start_to_end = (self.epoch >= self.s)
         update_this_epoch = start_to_end and ((self.epoch - self.s) % self.p == 0)
         self.gather_loss2_array()
@@ -188,6 +196,7 @@ class D3PDistributed:
         self.clear_epoch()
 
     def prune_with_distribution(self):
+        # Executes the core distribution-aware pruning logic using the globally aggregated loss.
         self.candidate.clear()
         loss2_tensor = torch.pow(self.loss_cache, 2)
         somo_loss, somo_idx = torch.sort(torch.mean(loss2_tensor, dim=0, keepdim=False))
@@ -229,6 +238,7 @@ class D3PDistributed:
 
 
     def clear_epoch(self):
+        # Clears loss caches and increments the epoch counter across all distributed processes.
         if self.rank == 0:
             self.loss_cache = torch.roll(self.loss_cache, shifts=1, dims=0)
             self.loss_cache[0, :] = 0
@@ -239,6 +249,7 @@ class D3PDistributed:
 
 
     def cal_distribution(self, l_cld_edge, r_cld_edge, dist_thre=0.999):
+        # Calculates the ideal chi-square distribution of the CLD metric for the distributed data.
         var, mean = torch.var_mean(self.loss_cache, dim=1, keepdim=False)
         mean_arr, var_arr = mean.cpu().numpy(), var.cpu().numpy()
         assert len(mean_arr) == len(var_arr) == self.n
@@ -292,10 +303,12 @@ class D3PDistributed:
         return bin_edges, peak_index, distribution_num
 
     def logging_prune(self):
+        # Logs the number of pruned data samples.
         if self.logging_on:
             logging.info(f'Prune {self.data_prune} data!')
 
     def logging_epoch_all(self):
+        # Logs and records the global data utilization percentage and statistics for the distributed epoch.
         data_should_use = self.num_data_train * self.epoch
         using_percent = self.data_using * self.num_replicas / data_should_use * 100
         if self.logging_on:

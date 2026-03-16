@@ -34,7 +34,7 @@ import models_mae
 
 from engine_pretrain import train_one_epoch, train_one_epoch_prune
 
-from d3p import D3PDistributed
+from D3P import D3PDistributed
 import logging
 
 

@@ -28,7 +28,14 @@ Please follow the environment setup of the original [MAE](https://github.com/fac
 Additionally, install the following dependencies:
 
 ```bash
-pip install scipy tensorboard tqdm numpy==1.23.5
+Python 3.70
+PyTorch == 1.8.0
+Numpy == 1.23.5
+timm == 0.3.2
+TorchVision == 0.9.0
+Scipy == 1.10.1
+TensorBoard
+tqdm
 ```
 
 ---
@@ -39,7 +46,17 @@ pip install scipy tensorboard tqdm numpy==1.23.5
 
 1.1 Download the [ImageNet-1K](https://www.image-net.org/) dataset, ensuring that the extracted directory contains the standard `train/` and `val/` subdirectories. Then the structure is as follows:
 
-
+ImageNet/
+├── train/
+│   ├── n01440764/
+│   │   ├── *.JPEG
+│   │   └── ...
+│   ├── n01443537/
+│   └── ...
+└── val/
+    ├── n01440764/
+    ├── n01443537/
+    └── ...
 
 1.2 In `train_d3p.sh`, replace `/path/to/data` with the absolute path to your local ImageNet-1K dataset.
 
@@ -55,7 +72,7 @@ Run MAE pre-training with $\mathrm{D}^3\mathrm{P}$, followed by the downstream f
 
 ## Comparative Results
 
-![Table1](E:\Github_upload_code\D3P\Figs\Table1.jpg)
+![](E:\Github_upload_code\D3P\Figs\Table1.jpg)
 
 ------
 

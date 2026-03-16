@@ -14,6 +14,7 @@ from .D3PSampler import (
 class D3P:
     def __init__(self, dataset, batchsize, args, padding_data=False,
                  shuffle=True, writer=None, logging_on=True, num_workers=4, collate_fn=None):
+        # Initializes the D3P pruning class, sets up datasets, samplers, dataloaders, and loss tracking tensors.
         # logging
         self.logging_on = logging_on
         if logging_on:
@@ -76,19 +77,23 @@ class D3P:
         self.update = self.update_loss_all()
 
     def get_using_data(self):
+        # Returns the count of data currently being used and the size of the pruned candidate list.
         return self.data_using, len(self.candidate)
 
     def get_indexed_dataset(self):
+        # Returns the wrapped dataset that outputs both data and its original index.
         return self.indexed_dataset
 
     def get_dataloader(self):
+        # Returns the dataloaders for both the remaining data and the pruned data.
         return self.remain_dataloader, self.prune_dataloader
 
     def data_already_prune(self):
-        # Calculate the amount of data that has been discarded
+        # Returns the total number of data samples that have been pruned.
         return self.data_prune
 
     def update_loss_all(self):
+        # Determines whether the losses of all samples should be tracked in the current epoch based on the pruning schedule.
         start_cal = self.s - self.n + 1
         if self.epoch < start_cal:
             return False
@@ -102,11 +107,12 @@ class D3P:
         return False
 
     def is_update(self):
+        # Returns a boolean flag indicating if loss tracking is currently active.
         return self.update
 
 
     def update_step(self, loss_step, idx):
-        # Update per step: calculate data using and store the loss
+        # Updates the loss tensor for a batch of data during the training step and returns the scaled loss.
         self.data_using += len(idx)
         idx = idx.to(self.loss_tensor.device)
         if self.update:
@@ -119,12 +125,12 @@ class D3P:
 
 
     def update_forward(self, loss_step, idx):
-        # Update while: calculate data using and store the loss
+        # Updates the loss tensor during the forward pass on pruned data.
         idx = idx.to(self.device)
         self.loss_tensor[0, idx] = loss_step.clone().detach()
 
     def update_epoch(self):
-        # Update per epoch: calculate the data should be discarded and feed-back log
+        # Triggers the pruning process and updates samplers at the end of an epoch if required by the schedule.
         start_to_end = (self.epoch >= self.s)
         if start_to_end and (self.epoch - self.s) % self.p == 0:
             self.grad_scale_tensor[:] = 1.
@@ -136,6 +142,7 @@ class D3P:
         self.clear_epoch()
 
     def prune_with_distribution(self):
+        # Executes the core distribution-aware pruning logic to select data to discard based on the CLD metric.
         self.candidate.clear()
         loss2_tensor = torch.pow(self.loss_tensor, 2)
         somo_loss, somo_idx = torch.sort(torch.mean(loss2_tensor, dim=0, keepdim=False))
@@ -177,6 +184,7 @@ class D3P:
 
 
     def clear_epoch(self):
+        # Resets the loss tracking tensors and increments the epoch counter for the next training cycle.
         self.loss_tensor = torch.roll(self.loss_tensor, shifts=1, dims=0)
         self.loss_tensor[0, :] = 0
         self.epoch += 1
@@ -184,6 +192,7 @@ class D3P:
 
 
     def cal_distribution(self, l_cld_edge, r_cld_edge, dist_thre=0.999):
+        # Calculates the theoretical chi-square distribution of the CLD metric to determine ideal data retention boundaries.
         var, mean = torch.var_mean(self.loss_tensor, dim=1, keepdim=False)
         mean_arr, var_arr = mean.cpu().numpy(), var.cpu().numpy()
         assert len(mean_arr) == len(var_arr) == self.n
@@ -238,10 +247,12 @@ class D3P:
 
 
     def logging_prune(self):
+        # Logs the number of pruned data samples.
         if self.logging_on:
             logging.info(f'Prune {self.data_prune} data!')
 
     def logging_epoch(self):
+        # Logs and records the data utilization percentage and statistics for the current epoch.
         data_should_use = self.num_data * self.epoch
         using_percent = self.data_using / data_should_use * 100
         if self.logging_on:
