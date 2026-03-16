@@ -30,10 +30,10 @@ Additionally, install the following dependencies:
 ```bash
 Python 3.70
 PyTorch == 1.8.0
-Numpy == 1.23.5
-timm == 0.3.2
 TorchVision == 0.9.0
+Numpy == 1.23.5
 Scipy == 1.10.1
+timm == 0.3.2
 TensorBoard
 tqdm
 ```
@@ -46,6 +46,7 @@ tqdm
 
 1.1 Download the [ImageNet-1K](https://www.image-net.org/) dataset, ensuring that the extracted directory contains the standard `train/` and `val/` subdirectories. Then the structure is as follows:
 
+```
 ImageNet/
 ├── train/
 │   ├── n01440764/
@@ -57,6 +58,7 @@ ImageNet/
     ├── n01440764/
     ├── n01443537/
     └── ...
+```
 
 1.2 In `train_d3p.sh`, replace `/path/to/data` with the absolute path to your local ImageNet-1K dataset.
 
