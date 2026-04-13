@@ -1,6 +1,6 @@
-# Distribution-aware Dynamic Data Pruning for Deep Learning
+# Distribution-aware Dynamic Data Pruning for Representation Learning
 
-This is the PyTorch implementation of our paper ‘Distribution-aware Dynamic Data Pruning for Deep Learning’. In this repository, we insert $\mathrm{D}^3\mathrm{P}$ into the pre-training pipeline of Masked Autoencoders (MAE).
+This is the PyTorch implementation of our paper ‘Distribution-aware Dynamic Data Pruning for Representation Learning’. In this repository, we insert $\mathrm{D}^3\mathrm{P}$ into the pre-training pipeline of Masked Autoencoders (MAE).
 
 ---
 
